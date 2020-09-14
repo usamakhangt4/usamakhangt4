@@ -45,14 +45,11 @@
 
 ---
 
----
-
-<details>
   <summary>:zap: Github Stats</summary>
 
   <img align="left" alt="usamakhangt4's Github Stats" src="https://github-readme-stats-sand-kappa.vercel.app/api?username=usamakhangt4&show_icons=true&hide_border=true" />
 
-</details>
+---
 
 [website]: https://usamakhangt4.com
 [twitter]: https://twitter.com/usamakhangt4
