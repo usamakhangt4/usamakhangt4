@@ -16,10 +16,10 @@
 </a>
 
 ### ☕ Get in touch
-- LinkedIn: <a href = "https://www.linkedin.com/in/juel-braganza/">juel-braganza</a>
-- Twitter: <a href = "https://twitter.com/j_brgnz">j_brgnz</a>
+- LinkedIn: <a href = "https://www.linkedin.com/in/usamakhangt4/">usamakhangt4</a>
+- Twitter: <a href = "https://twitter.com/SugarDaddyyy_69">Usama Khan</a>
 - Website: coming soon
-- Food Blog: <a href = "https://callitameal.com">callitameal.com</a>
+
 <br>
 <br>
 
