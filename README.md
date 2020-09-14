@@ -3,7 +3,7 @@
 <a href="https://github.com/usamakhangt4">
   <img src="https://github-readme-stats-sand-kappa.vercel.app/api?username=usamakhangt4&show_icons=true&count_private=true&include_all_commits=true" alt="usamakhangt4's GitHub Stats" />
 </a>
-
+<img align="right" src="https://github.com/rajput2107/rajput2107/blob/master/Assets/Developer.gif"/>
 ### My latest projects
 
 <a href="https://github.com/usamakhangt4/dad-jokes-app-using-next-js">
