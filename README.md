@@ -1,4 +1,5 @@
 ### Hi there, I'm Usama Khan! 👋
+
 <img align="right" src="https://github.com/rajput2107/rajput2107/blob/master/Assets/Developer.gif"/>
 <a href="https://github.com/usamakhangt4">
   <img src="https://github-readme-stats-sand-kappa.vercel.app/api?username=usamakhangt4&show_icons=true&count_private=true&include_all_commits=true" alt="usamakhangt4's GitHub Stats" />
@@ -16,7 +17,4 @@
 
 ### Recently I'm coding in...
 
-<a href="https://codestats.net/users/usamakhangt4">
-  <img src='https://codestats-readme.usamakhangt4.cn/history-graph/usamakhangt4?width=850&height=300&timezone=08:00&history_days=20&max_languages=12&language_colors=["3e4053","f15854","5da5da","faa43a","60bd68","f17cb0","b2912f","00897b","b276b2","ffc0cb","cddc39","7e57c2","bdbdbd"]' alt="usamakhangt4's Code::Stats history graph" />
-</a>
-<!-- SFMyNTY.ZFhOaGJXRnJhR0Z1WjNRMCMjTVRFek9UWT0.yxGIcsz6IMVxZKcWnsFChqXn6BYF8sWMEvwZbGtQM34 -->
+![My Code::Stats history graph](https://codestats-readme.wegfan.cn/history-graph/usamakhangt4?history_days=30)
