@@ -14,6 +14,7 @@
 <a href="https://github.com/usamakhangt4/covid19tracker">
   <img align="middle" src="https://github-readme-stats-sand-kappa.vercel.app/api/pin/?username=usamakhangt4&repo=covid19tracker" alt="covid19tracker" />
 </a>
+
 ### ☕ Get in touch
 - LinkedIn: <a href = "https://www.linkedin.com/in/juel-braganza/">juel-braganza</a>
 - Twitter: <a href = "https://twitter.com/j_brgnz">j_brgnz</a>
@@ -21,6 +22,7 @@
 - Food Blog: <a href = "https://callitameal.com">callitameal.com</a>
 <br>
 <br>
+
 ### Recently I'm coding in...
 
 ![My Code::Stats history graph](https://codestats-readme.wegfan.cn/history-graph/usamakhangt4?history_days=30)
