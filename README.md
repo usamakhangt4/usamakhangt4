@@ -17,7 +17,7 @@
 
 ### ☕ Get in touch
 - LinkedIn: <a href = "https://www.linkedin.com/in/usamakhangt4/">usamakhangt4</a>
-- Twitter: <a href = "https://twitter.com/SugarDaddyyy_69">Usama Khan</a>
+- Twitter: <a href = "https://twitter.com/SugarDaddyyy_69">fe@rLess_</a>
 - Website: coming soon
 
 <br>
