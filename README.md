@@ -16,6 +16,8 @@
 </a>
 
 ### ☕ Get in touch
+- Gmail: <a href = "#">usamakhangt4@gmail.com</a>
+- Medium: <a href = "https://medium.com/@usamakhangt4">Usama Khan</a>
 - LinkedIn: <a href = "https://www.linkedin.com/in/usamakhangt4/">usamakhangt4</a>
 - Twitter: <a href = "https://twitter.com/SugarDaddyyy_69">fe@rLess_</a>
 - Website: coming soon
