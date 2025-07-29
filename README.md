@@ -35,8 +35,7 @@ A web app to track COVID-19 cases globally.
 ---
 
 <p align="center"> 
-  Visitor Count<br>
-  <img src="https://profile-counter.glitch.me/usamakhangt4/count.svg" />
+  ![Visitor Badge](https://visitor-badge.laobi.icu/badge?page_id=usamakhangt4.usamakhangt4)
 </p>
 
-![Visitor Badge](https://visitor-badge.laobi.icu/badge?page_id=usamakhangt4.usamakhangt4)
+
