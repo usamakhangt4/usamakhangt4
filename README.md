@@ -34,8 +34,7 @@ A web app to track COVID-19 cases globally.
 
 ---
 
-<p align="center"> 
-  ![Visitor Badge](https://visitor-badge.laobi.icu/badge?page_id=usamakhangt4.usamakhangt4)
+<p align="center">
+  <img src="https://visitor-badge.laobi.icu/badge?page_id=usamakhangt4.usamakhangt4" alt="Visitor Badge" width="160">
 </p>
-![Visitor Badge](https://visitor-badge.laobi.icu/badge?page_id=usamakhangt4.usamakhangt4)
 
