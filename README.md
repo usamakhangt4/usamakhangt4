@@ -1,40 +1,50 @@
-### Hi there, I'm Usama Khan! 👋
+<div align="center">
+  <h1 align="center">Hi, I'm Usama Khan 🚀</h1>
+  <h3>Frontend Engineer | Next.js, TanStack & AI</h3>
+  <p>Building scalable, pixel-perfect web applications and exploring the intersection of Frontend & Computer Vision.</p>
+  
+  <a href="https://www.linkedin.com/in/usamakhangt4/">
+    <img src="https://img.shields.io/badge/LinkedIn-Connect-blue?style=for-the-badge&logo=linkedin" alt="LinkedIn" />
+  </a>
+  <a href="https://medium.com/@usamakhangt4">
+    <img src="https://img.shields.io/badge/Medium-Read_Articles-black?style=for-the-badge&logo=medium" alt="Medium" />
+  </a>
+  <a href="mailto:usamakhangt4@gmail.com">
+    <img src="https://img.shields.io/badge/Gmail-Contact_Me-red?style=for-the-badge&logo=gmail" alt="Gmail" />
+  </a>
+</div>
 
-<img align="right" src="https://github.com/rajput2107/rajput2107/blob/master/Assets/Developer.gif"/>
+<br/>
 
----
+### 🛠️ My Tech Ecosystem
 
-### About Me
-A passionate developer focused on building scalable web applications and exploring new technologies.
+I don't just write code; I architect solutions. Here is the stack I use to build production-grade apps:
 
----
-
-### My Latest Projects
-#### Dad Jokes App (Next.js)
-A fun app to fetch random dad jokes using a public API.  
-[GitHub Repo](https://github.com/usamakhangt4/dad-jokes-app-using-next-js) | [Live Demo](#)
-
-#### COVID-19 Tracker
-A web app to track COVID-19 cases globally.  
-[GitHub Repo](https://github.com/usamakhangt4/covid19tracker) | [Live Demo](#)
-
----
-
-### ☕ Get in Touch
-- Gmail: [usamakhangt4@gmail.com](mailto:usamakhangt4@gmail.com)
-- Medium: [Usama Khan](https://medium.com/@usamakhangt4)
-- LinkedIn: [Usama Khan](https://www.linkedin.com/in/usamakhangt4/)
-- Twitter: [fe@rLess_](https://twitter.com/SugarDaddyyy_69)
-- Website: Coming Soon
-
----
-
-### Recently I'm Coding In...
-![My Code::Stats history graph](https://codestats-readme.wegfan.cn/history-graph/usamakhangt4?history_days=30)
+| Domain | Technologies |
+| :--- | :--- |
+| **Frontend Core** | React, Next.js (App Router), TypeScript, Vue.js |
+| **Styling & UI** | Tailwind CSS, Shadcn UI, Framer Motion |
+| **State & Data** | TanStack Query, Zustand, Redux Toolkit |
+| **Backend & BaaS** | Supabase, Firebase, Strapi (Headless CMS) |
+| **AI & Logic** | Python, YOLOPv2 (Computer Vision), Drizzle ORM |
 
 ---
 
-<p align="center">
-  <img src="https://visitor-badge.laobi.icu/badge?page_id=usamakhangt4.usamakhangt4" alt="Visitor Badge" width="160">
-</p>
+### 🔭 What I'm Working On
+- **Migrating Legacy State:** Moving complex client-side state to **TanStack Query** for better caching and performance.
+- **AI Integration:** Building interfaces for Python-based Computer Vision models (like my **YOLOPv2 Studio**).
+- **Architecture:** Exploring **TanStack Start** and **Supabase** for full-stack type safety.
 
+---
+
+### 📈 GitHub Stats
+<div align="center">
+  <img src="https://github-readme-stats.vercel.app/api?username=usamakhangt4&show_icons=true&theme=dracula&hide_border=true" height="150" alt="stats graph"  />
+  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=usamakhangt4&layout=compact&theme=dracula&hide_border=true" height="150" alt="languages graph" />
+</div>
+
+<br/>
+
+<div align="center">
+  <img src="https://visitor-badge.laobi.icu/badge?page_id=usamakhangt4.usamakhangt4" alt="Visitor Badge" />
+</div>
