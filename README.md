@@ -13,7 +13,7 @@
     </a>
     &nbsp;&nbsp;
     <a href="https://medium.com/@usamakhangt4" target="_blank">
-      <img src="https://img.shields.io/badge/-12100E?style=for-the-badge&logo=medium&logoColor=white" target="_blank" />
+      <img src="https://github.com/ionic-team/ionicons/blob/main/src/svg/logo-medium.svg" target="_blank" />
     </a>
     &nbsp;&nbsp;
     <a href="mailto:usamakhangt4@gmail.com" target="_blank">
