@@ -1,17 +1,25 @@
 <div align="center">
-  <h1 align="center">Hi, I'm Usama Khan 🚀</h1>
-  <h3>Frontend Engineer | Next.js, TanStack & AI</h3>
-  <p>Building scalable, pixel-perfect web applications and exploring the intersection of Frontend & Computer Vision.</p>
+  <h1 align="center">Hi, I'm Usama Khan <img src="https://media.giphy.com/media/hvRJCLFzcasrR4ia7z/giphy.gif" width="30px"/></h1>
   
-  <a href="https://www.linkedin.com/in/usamakhangt4/">
-    <img src="https://img.shields.io/badge/LinkedIn-Connect-blue?style=for-the-badge&logo=linkedin" alt="LinkedIn" />
+  <a href="https://git.io/typing-svg">
+    <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=600&size=24&pause=1000&color=338BFD&center=true&vCenter=true&width=500&lines=Frontend+Engineer+%7C+Next.js+%26+TanStack;Building+Scalable+AI+Web+Apps;Exploring+Computer+Vision+%26+Python" alt="Typing SVG" />
   </a>
-  <a href="https://medium.com/@usamakhangt4">
-    <img src="https://img.shields.io/badge/Medium-Read_Articles-black?style=for-the-badge&logo=medium" alt="Medium" />
-  </a>
-  <a href="mailto:usamakhangt4@gmail.com">
-    <img src="https://img.shields.io/badge/Gmail-Contact_Me-red?style=for-the-badge&logo=gmail" alt="Gmail" />
-  </a>
+
+  <p><b>Building scalable, pixel-perfect web applications & exploring the intersection of Frontend & Computer Vision.</b></p>
+  
+  <p>
+    <a href="https://www.linkedin.com/in/usamakhangt4/">
+      <img src="https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" />
+    </a>
+    &nbsp;
+    <a href="https://medium.com/@usamakhangt4">
+      <img src="https://img.shields.io/badge/Medium-Read_Articles-12100E?style=for-the-badge&logo=medium&logoColor=white" alt="Medium" />
+    </a>
+    &nbsp;
+    <a href="mailto:usamakhangt4@gmail.com">
+      <img src="https://img.shields.io/badge/Gmail-Contact_Me-EA4335?style=for-the-badge&logo=gmail&logoColor=white" alt="Gmail" />
+    </a>
+  </p>
 </div>
 
 <br/>
@@ -37,11 +45,24 @@ I don't just write code; I architect solutions. Here is the stack I use to build
 
 ---
 
-### Recently I'm Coding In...
-![My Code::Stats history graph](https://codestats-readme.wegfan.cn/history-graph/usamakhangt4?history_days=30)
-
-<br/>
-
+<br />
 <div align="center">
+  <h3>🤝 Let's Collaborate</h3>
+  <p>
+    I am open to discussing <b>Next.js Architecture</b>, <b>Computer Vision integrations</b>, 
+    or building scalable <b>SaaS products</b>.
+  </p>
+  
+  <p>
+    <a href="https://www.linkedin.com/in/usamakhangt4/">
+      <img src="https://img.shields.io/badge/Connect_on_LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" />
+    </a>
+    &nbsp;&nbsp;
+    <a href="mailto:usamakhangt4@gmail.com">
+      <img src="https://img.shields.io/badge/Email_Me-D14836?style=for-the-badge&logo=gmail&logoColor=white" alt="Email" />
+    </a>
+  </p>
+
+  <br />
   <img src="https://visitor-badge.laobi.icu/badge?page_id=usamakhangt4.usamakhangt4" alt="Visitor Badge" />
 </div>
