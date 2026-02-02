@@ -2,7 +2,7 @@
   <h1 align="center">Hi, I'm Usama Khan <img src="https://media.giphy.com/media/hvRJCLFzcasrR4ia7z/giphy.gif" width="30px"/></h1>
   
   <a href="https://git.io/typing-svg">
-    <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=600&size=24&pause=1000&color=338BFD&center=true&vCenter=true&width=500&lines=Frontend+Engineer+%7C+Next.js+%26+TanStack;Building+Scalable+AI+Web+Apps;Exploring+Computer+Vision+%26+Python" alt="Typing SVG" />
+    <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=600&size=24&pause=1000&color=338BFD&center=true&vCenter=true&width=650&lines=Frontend+Engineer+%7C+Next.js+%26+TanStack;Building+Scalable+AI+Web+Apps;Exploring+Computer+Vision+%26+Python" alt="Typing SVG" />
   </a>
 
   <p><b>Building scalable, pixel-perfect web applications & exploring the intersection of Frontend & Computer Vision.</b></p>
