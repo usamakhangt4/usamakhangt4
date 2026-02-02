@@ -39,8 +39,11 @@ I don't just write code; I architect solutions. Here is the stack I use to build
 
 ### 📈 GitHub Stats
 <div align="center">
-  <img src="https://github-readme-stats.vercel.app/api?username=usamakhangt4&show_icons=true&theme=dracula&hide_border=true" height="150" alt="stats graph"  />
-  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=usamakhangt4&layout=compact&theme=dracula&hide_border=true" height="150" alt="languages graph" />
+ ### 📈 GitHub Stats
+
+![Overall Stats](https://github-readme-stats.vercel.app/api?username=usamakhangt4&show_icons=true&theme=dracula)
+
+![Top Languages](https://github-readme-stats.vercel.app/api/top-langs/?username=usamakhangt4&layout=compact&theme=dracula)
 </div>
 
 <br/>
