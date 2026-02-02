@@ -7,17 +7,17 @@
 
   <p><b>Building scalable, pixel-perfect web applications & exploring the intersection of Frontend & Computer Vision.</b></p>
   
-  <p>
-    <a href="https://www.linkedin.com/in/usamakhangt4/">
-      <img src="https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" alt="LinkedIn" />
+<p>
+    <a href="https://www.linkedin.com/in/usamakhangt4/" target="_blank">
+      <img src="https://skillicons.dev/icons?i=linkedin" height="40" alt="linkedin" />
     </a>
-    &nbsp;
-    <a href="https://medium.com/@usamakhangt4">
-      <img src="https://img.shields.io/badge/Medium-Read_Articles-12100E?style=for-the-badge&logo=medium&logoColor=white" alt="Medium" />
+    &nbsp;&nbsp;
+    <a href="https://medium.com/@usamakhangt4" target="_blank">
+      <img src="https://skillicons.dev/icons?i=medium" height="40" alt="medium" />
     </a>
-    &nbsp;
-    <a href="mailto:usamakhangt4@gmail.com">
-      <img src="https://img.shields.io/badge/Gmail-Contact_Me-EA4335?style=for-the-badge&logo=gmail&logoColor=white" alt="Gmail" />
+    &nbsp;&nbsp;
+    <a href="mailto:usamakhangt4@gmail.com" target="_blank">
+      <img src="https://skillicons.dev/icons?i=gmail" height="40" alt="gmail" />
     </a>
   </p>
 </div>
