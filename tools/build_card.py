@@ -1,4 +1,4 @@
-"""Build the dark and light neofetch-style profile cards.
+"""Build the dark and light profile cards.
 
 The palette lives here. The link buttons and the Pac-Man board import it so
 one colour change repaints every SVG.
@@ -6,40 +6,42 @@ one colour change repaints every SVG.
 
 from __future__ import annotations
 
+import colorsys
 import json
 import sys
 from dataclasses import dataclass
+from datetime import date
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 ART_DARK = ROOT / "assets" / "ascii-art.txt"
 ART_LIGHT = ROOT / "assets" / "ascii-art-light.txt"
+ART_COLOR = ROOT / "assets" / "ascii-color.json"
 CACHE_STATS = ROOT / "cache" / "stats.json"
 
 # Keep this identical to make_ascii.RAMP. Index 0 is empty, index 9 is solid.
 ART_RAMP = " .:-=+*#%@"
-
-# Consolas advance measured at 100px: 54.98px per glyph.
-# Courier New at the same size: 60.01px. size-adjust brings the wider faces
-# onto Consolas' advance. textLength is a second lock so a generic monospace
-# cannot drift the dot leaders.
 CHAR_ADVANCE = 0.5498
 MONO_SIZE_ADJUST = "91.62%"
 MONO_FAMILY = 'Consolas, "Menlo Adjusted", "Mono Adjusted", monospace'
 
-PANEL_COLS = 70
-ART_WIDTH = 600.0
-CELL_ASPECT = 0.54
-OUTER_PAD = 22.0
-COLUMN_GAP = 22.0
-PANEL_PAD_X = 16.0
-PANEL_FONT = 15.0
+CANVAS_W = 1018.0
+PANEL_COLS = 65
+PANEL_FONT = 16.0
+PANEL_ADVANCE = 8.8
 PANEL_LINE = 20.0
-
+TEXT_X = 431.0
+FIRST_Y = 31.0
+ART_FONT = 10.2
+ART_ADVANCE = 5.608
+ART_LINE = 11.2
+ART_BAND = (15.0, 416.0)
+SHIPPED = date(2018, 9, 1)
 TITLE = "usama@khan"
 
 INFO: list[tuple[str, str] | None] = [
     ("OS", "Windows, Ubuntu"),
+    ("Uptime", ""),
     ("Host", "Pakistan"),
     ("Kernel", "Applied AI Engineer"),
     ("Work", "Senior Software Engineer @ FOCUS"),
@@ -63,40 +65,40 @@ CONTACT = [
 
 THEMES: dict[str, dict[str, str | list[str]]] = {
     "dark": {
-        "bg": "#0d1117",
-        "panel": "#161b22",
-        "border": "#30363d",
-        "text": "#e6edf3",
-        "muted": "#6e7681",
-        "accent": "#338bfd",
+        "bg": "#161b22",
+        "text": "#c9d1d9",
+        "key": "#58a6ff",
+        "value": "#a5d6ff",
+        "dots": "#616e7f",
         "green": "#3fb950",
         "red": "#f85149",
-        "cursor": "#338bfd",
-        "ink_low": "#2c231e",
-        "ink_high": "#fff1e4",
+        "button_border": "#363c43",
+        "portfolio": "#58a6ff",
+        "linkedin": "#a5d6ff",
+        "email": "#f0883e",
         "pac": "#ffe14a",
         "ghost_eye": "#f0f6fc",
-        "ghost_pupil": "#0d1117",
-        "ghosts": ["#338bfd", "#f85149", "#b07cff", "#3fb950"],
-        "levels": ["#161b22", "#0e3a6b", "#1d6fd4", "#58a6ff", "#d2e7ff"],
+        "ghost_pupil": "#161b22",
+        "ghosts": ["#f85149", "#f778ba", "#39c5cf", "#f0883e"],
+        "levels": ["#21262d", "#1f3654", "#2b5287", "#4a7fc4", "#a5d6ff"],
     },
     "light": {
-        "bg": "#ffffff",
-        "panel": "#f6f8fa",
-        "border": "#d0d7de",
-        "text": "#1f2328",
-        "muted": "#818b98",
-        "accent": "#0969da",
+        "bg": "#f6f8fa",
+        "text": "#24292f",
+        "key": "#0969da",
+        "value": "#0a3069",
+        "dots": "#8c959f",
         "green": "#1a7f37",
         "red": "#cf222e",
-        "cursor": "#0969da",
-        "ink_low": "#f7f4f1",
-        "ink_high": "#2c241f",
+        "button_border": "#d8d8da",
+        "portfolio": "#0969da",
+        "linkedin": "#0550ae",
+        "email": "#bc4c00",
         "pac": "#e2a400",
         "ghost_eye": "#ffffff",
-        "ghost_pupil": "#1f2328",
-        "ghosts": ["#0969da", "#cf222e", "#8250df", "#1a7f37"],
-        "levels": ["#ebedf0", "#d5e5ff", "#8cbcff", "#338bfd", "#0550ae"],
+        "ghost_pupil": "#24292f",
+        "ghosts": ["#cf222e", "#bf3989", "#1b7c83", "#bc4c00"],
+        "levels": ["#ebedf0", "#cfe0f5", "#94bbe9", "#4f8ad6", "#0a3069"],
     },
 }
 
@@ -136,29 +138,6 @@ class Line:
     kind: str
 
 
-@dataclass(frozen=True)
-class ArtLayout:
-    char_w: float
-    line_h: float
-    font_size: float
-    height: float
-    top: float
-
-
-@dataclass(frozen=True)
-class Canvas:
-    width: float
-    height: float
-    art_width: float
-    panel_x: float
-    panel_y: float
-    panel_w: float
-    panel_h: float
-    text_x: float
-    text_top: float
-    char_w: float
-
-
 def theme(name: str) -> dict[str, str | list[str]]:
     if name == "dark":
         return THEMES["dark"]
@@ -185,71 +164,84 @@ def esc(text: str) -> str:
     return text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
-def _mix(start: str, end: str, amount: float) -> str:
-    def channels(hex_color: str) -> tuple[int, int, int]:
-        value = hex_color.removeprefix("#")
-        return int(value[0:2], 16), int(value[2:4], 16), int(value[4:6], 16)
-
-    left = channels(start)
-    right = channels(end)
-    mixed = tuple(round(left[index] + (right[index] - left[index]) * amount) for index in range(3))
-    return "#{:02x}{:02x}{:02x}".format(*mixed)
+def _width(pieces: list[Seg]) -> int:
+    return sum(len(piece.text) for piece in pieces)
 
 
-def ink(character: str, theme_name: str) -> str:
-    index = ART_RAMP.find(character)
-    if index < 0:
-        raise SystemExit(f"art contains {character!r}, which is outside the ramp")
-    colors = theme(theme_name)
-    low = colors["ink_low"]
-    high = colors["ink_high"]
-    if not isinstance(low, str) or not isinstance(high, str):
-        raise SystemExit("ink colours must be strings")
-    amount = index / (len(ART_RAMP) - 1)
-    if theme_name == "dark":
-        amount = amount**0.8
-    elif theme_name == "light":
-        amount = amount**1.15
-    else:
-        raise SystemExit(f"unknown theme {theme_name}")
-    return _mix(low, high, amount)
+def _join(pieces: list[Seg]) -> str:
+    return "".join(piece.text for piece in pieces)
 
 
-def fit_pieces(prefix: str, prefix_role: str, tail: list[Seg], cols: int = PANEL_COLS) -> list[Seg]:
-    tail_width = sum(len(piece.text) for piece in tail)
-    dots = cols - len(prefix) - tail_width
-    if dots < 2:
-        raise SystemExit(f"panel row is wider than {cols} columns: {prefix!r} leaves {dots} dots")
-    pieces = [Seg(prefix, prefix_role), Seg("." * dots, "muted"), *tail]
-    width = sum(len(piece.text) for piece in pieces)
-    if width != cols:
-        raise SystemExit(f"row {prefix!r} is {width} columns, expected {cols}")
+def uptime(today: date | None = None) -> str:
+    current = date.today() if today is None else today
+    years = current.year - SHIPPED.year
+    months = current.month - SHIPPED.month
+    if current.day < SHIPPED.day:
+        months -= 1
+    if months < 0:
+        years -= 1
+        months += 12
+    return f"{years} years, {months} months (shipping since 2018)"
+
+
+def _key(key: str) -> list[Seg]:
+    pieces: list[Seg] = []
+    for index, part in enumerate(key.split(".")):
+        if index:
+            pieces.append(Seg(".", "text"))
+        pieces.append(Seg(part, "key"))
     return pieces
 
 
-def fit_row(key: str, value: str, cols: int = PANEL_COLS) -> list[Seg]:
-    return fit_pieces(f"{key}: ", "accent", [Seg(f" {value}", "text")], cols)
+def _row(key: str, value: str) -> list[Seg]:
+    prefix = [Seg(". ", "dots"), *_key(key), Seg(":", "text")]
+    dots = PANEL_COLS - _width(prefix) - len(value) - 2
+    if dots < 1:
+        raise SystemExit(f"{key} does not fit in {PANEL_COLS} columns")
+    pieces = [*prefix, Seg(" " + ("." * dots) + " ", "dots"), Seg(value, "value")]
+    if _width(pieces) != PANEL_COLS:
+        raise SystemExit(f"{key} rendered at {_width(pieces)} columns")
+    return pieces
 
 
-def section_line(title: str, cols: int = PANEL_COLS) -> list[Seg]:
+def _separator() -> list[Seg]:
+    return [Seg("." + (" " * (PANEL_COLS - 1)), "dots")]
+
+
+def _section(title: str) -> list[Seg]:
     core = f"- {title} -"
-    extra = cols - len(core)
-    if extra < 1:
-        raise SystemExit(f"section {title!r} does not fit in {cols} columns")
-    text = core + ("—" * extra)
-    if len(text) != cols:
-        raise SystemExit(f"section {title!r} rendered at {len(text)} columns")
-    return [Seg(text, "accent")]
+    dashes = PANEL_COLS - len(core) - 1
+    if dashes < 1:
+        raise SystemExit(f"section {title} does not fit")
+    text = core + ("—" * dashes) + "-"
+    if len(text) != PANEL_COLS:
+        raise SystemExit(f"section {title} rendered at {len(text)} columns")
+    return [Seg(text, "text")]
 
 
-def blank_line(cols: int = PANEL_COLS) -> list[Seg]:
-    return [Seg(" " * cols, "text")]
+def _half(prefix: list[Seg], value: list[Seg], width: int) -> list[Seg]:
+    dots = width - _width(prefix) - _width(value) - 2
+    if dots < 1:
+        raise SystemExit(f"split column does not fit in {width}: {_join(prefix)} {_join(value)}")
+    pieces = [*prefix, Seg(" " + ("." * dots) + " ", "dots"), *value]
+    if _width(pieces) != width:
+        raise SystemExit(f"split column rendered at {_width(pieces)}, expected {width}")
+    return pieces
 
 
-def _placeholder(value: object) -> str:
+def _split(left_key: str, left_value: list[Seg], right_key: str, right_value: list[Seg]) -> list[Seg]:
+    left = _half([Seg(". ", "dots"), Seg(left_key, "key"), Seg(":", "text")], left_value, 37)
+    right = _half([Seg(right_key, "key"), Seg(":", "text")], right_value, 25)
+    pieces = [*left, Seg(" | ", "text"), *right]
+    if _width(pieces) != PANEL_COLS:
+        raise SystemExit(f"{left_key} split rendered at {_width(pieces)} columns")
+    return pieces
+
+
+def _num(value: int | None) -> str:
     if value is None:
-        return "—"
-    return f"{int(value):,}"
+        return "0"
+    return f"{value:,}"
 
 
 def load_stats() -> dict[str, int] | None:
@@ -270,58 +262,90 @@ def load_stats() -> dict[str, int] | None:
     return {key: int(data[key]) for key in required}
 
 
-def stats_lines(stats: dict[str, int] | None) -> list[Line]:
-    owned = _placeholder(None if stats is None else stats["repos_owned"])
-    contributed = _placeholder(None if stats is None else stats["repos_contributed"])
-    stars = _placeholder(None if stats is None else stats["stars"])
-    commits = _placeholder(None if stats is None else stats["commits"])
-    followers = _placeholder(None if stats is None else stats["followers"])
-    added = _placeholder(None if stats is None else stats["loc_added"])
-    deleted = _placeholder(None if stats is None else stats["loc_deleted"])
-    loc_tail = [
-        Seg(" ", "text"),
-        Seg(f"++{added}", "green"),
-        Seg(" ", "text"),
-        Seg(f"--{deleted}", "red"),
+def _stats(stats: dict[str, int] | None) -> list[Line]:
+    owned = 0 if stats is None else stats["repos_owned"]
+    contributed = 0 if stats is None else stats["repos_contributed"]
+    stars = 0 if stats is None else stats["stars"]
+    commits = 0 if stats is None else stats["commits"]
+    followers = 0 if stats is None else stats["followers"]
+    added = 0 if stats is None else stats["loc_added"]
+    deleted = 0 if stats is None else stats["loc_deleted"]
+    repos_value = [
+        Seg(_num(owned), "value"),
+        Seg(" {", "text"),
+        Seg("Contributed", "key"),
+        Seg(": ", "text"),
+        Seg(_num(contributed), "value"),
+        Seg("}", "text"),
+    ]
+    loc_value = [
+        Seg(_num(added - deleted), "value"),
+        Seg(" ( ", "text"),
+        Seg(f"{_num(added)}++", "green"),
+        Seg(", ", "text"),
+        Seg(f"{_num(deleted)}--", "red"),
+        Seg(" )", "text"),
     ]
     return [
-        Line(fit_row("Repos", f"{owned} {{{contributed}}} | Stars: {stars}"), "row"),
-        Line(fit_row("Commits", f"{commits} | Followers: {followers}"), "row"),
-        Line(fit_pieces("Lines of Code: ", "accent", loc_tail), "row"),
+        Line(_split("Repos", repos_value, "Stars", [Seg(_num(stars), "value")]), "row"),
+        Line(_split("Commits", [Seg(_num(commits), "value")], "Followers", [Seg(_num(followers), "value")]), "row"),
+        Line(
+            [
+                Seg(". ", "dots"),
+                *_key("Lines of Code"),
+                Seg(":", "text"),
+                Seg(
+                    " "
+                    + (
+                        "."
+                        * (
+                            PANEL_COLS
+                            - len(". Lines of Code:")
+                            - _width(loc_value)
+                            - 2
+                        )
+                    )
+                    + " ",
+                    "dots",
+                ),
+                *loc_value,
+            ],
+            "row",
+        ),
     ]
 
 
-def build_lines(stats: dict[str, int] | None) -> list[Line]:
-    user, host = TITLE.split("@", 1)
+def build_lines(stats: dict[str, int] | None, today: date | None = None) -> list[Line]:
     lines = [
-        Line([Seg(user, "accent"), Seg("@", "muted"), Seg(host, "accent")], "title"),
-        Line([Seg("-" * len(TITLE), "accent")], "rule"),
-        Line(blank_line(), "row"),
+        Line(
+            [Seg(TITLE, "title"), Seg(" -" + ("—" * 52) + "-", "rule")],
+            "row",
+        )
     ]
     for item in INFO:
         if item is None:
-            lines.append(Line(blank_line(), "row"))
+            lines.append(Line(_separator(), "row"))
             continue
         key, value = item
-        lines.append(Line(fit_row(key, value), "row"))
-    lines.append(Line(blank_line(), "row"))
-    lines.append(Line(section_line("Contact"), "row"))
+        if key == "Uptime":
+            value = uptime(today)
+        lines.append(Line(_row(key, value), "row"))
+    lines.append(Line(_separator(), "row"))
+    lines.append(Line(_section("Contact"), "row"))
     for key, value in CONTACT:
-        lines.append(Line(fit_row(key, value), "row"))
-    lines.append(Line(blank_line(), "row"))
-    lines.append(Line(section_line("GitHub Stats"), "row"))
-    lines.extend(stats_lines(stats))
-    lines.append(Line(blank_line(), "row"))
-    lines.append(Line([Seg(">", "cursor")], "cursor"))
+        lines.append(Line(_row(key, value), "row"))
+    lines.append(Line(_separator(), "row"))
+    lines.append(Line(_section("GitHub Stats"), "row"))
+    lines.extend(_stats(stats))
+    lines.append(Line([Seg(" " * PANEL_COLS, "text")], "row"))
+    lines.append(Line([Seg("> ", "key"), Seg("█", "value")], "cursor"))
     for line in lines:
-        if line.kind == "row":
-            width = sum(len(piece.text) for piece in line.pieces)
-            if width != PANEL_COLS:
-                raise SystemExit(f"a panel row is {width} columns")
-        if line.kind == "title":
-            width = sum(len(piece.text) for piece in line.pieces)
-            if width != len(TITLE):
-                raise SystemExit("title width drifted")
+        if line.kind != "row":
+            continue
+        if _width(line.pieces) != PANEL_COLS:
+            raise SystemExit(f"a panel row is {_width(line.pieces)} columns: {_join(line.pieces)!r}")
+    if _width(lines[0].pieces) != PANEL_COLS:
+        raise SystemExit("title row is not 65 columns")
     return lines
 
 
@@ -332,100 +356,144 @@ def load_art(path: Path) -> list[str]:
     return lines
 
 
-def layout(dark_art: list[str], light_art: list[str], row_count: int) -> tuple[Canvas, dict[str, ArtLayout]]:
-    char_w = PANEL_FONT * CHAR_ADVANCE
-    panel_w = PANEL_PAD_X * 2 + PANEL_COLS * char_w
-    panel_text_h = row_count * PANEL_LINE
-    # The panel fixes the card. A denser portrait gets a smaller font so it
-    # still fills ART_WIDTH without changing the card's pixel size.
-    content_h = panel_text_h
-    width = OUTER_PAD * 2 + ART_WIDTH + COLUMN_GAP + panel_w
-    height = OUTER_PAD * 2 + content_h
-    canvas = Canvas(
-        width=width,
-        height=height,
-        art_width=ART_WIDTH,
-        panel_x=OUTER_PAD + ART_WIDTH + COLUMN_GAP,
-        panel_y=OUTER_PAD,
-        panel_w=panel_w,
-        panel_h=content_h,
-        text_x=OUTER_PAD + ART_WIDTH + COLUMN_GAP + PANEL_PAD_X,
-        text_top=OUTER_PAD + (content_h - panel_text_h) / 2,
-        char_w=char_w,
+def load_colors() -> list[list[list[float] | None]]:
+    if not ART_COLOR.exists():
+        raise SystemExit(f"missing {ART_COLOR.name}")
+    data = json.loads(ART_COLOR.read_text(encoding="utf-8"))
+    rows = data.get("rows") if isinstance(data, dict) else None
+    if not isinstance(rows, list):
+        raise SystemExit(f"{ART_COLOR.name} has no rows")
+    return rows
+
+
+def _paint(cell: list[float], theme_name: str) -> str:
+    red, green, blue, value = (float(cell[0]) / 255, float(cell[1]) / 255, float(cell[2]) / 255, float(cell[3]))
+    hue, _lightness, saturation = colorsys.rgb_to_hls(red, green, blue)
+    if theme_name == "dark":
+        saturation = min(1.0, saturation * 1.25)
+        lightness = 0.30 + 0.62 * value
+    elif theme_name == "light":
+        saturation = min(1.0, saturation * 1.25 * 1.35)
+        lightness = 0.55 - 0.35 * value
+    else:
+        raise SystemExit(f"unknown theme {theme_name}")
+    out_r, out_g, out_b = colorsys.hls_to_rgb(hue, lightness, saturation)
+    return "#{:02x}{:02x}{:02x}".format(
+        int(round(out_r * 255)),
+        int(round(out_g * 255)),
+        int(round(out_b * 255)),
     )
-    arts: dict[str, ArtLayout] = {}
-    for name, lines in ("dark", dark_art), ("light", light_art):
-        columns = max(len(line) for line in lines)
-        rows = len(lines)
-        art_char = ART_WIDTH / columns
-        natural_line = art_char / CELL_ASPECT
-        natural_h = rows * natural_line
-        scale = min(1.0, content_h / natural_h) if natural_h else 1.0
-        line_h = natural_line * scale
-        block = rows * line_h
-        arts[name] = ArtLayout(
-            char_w=art_char,
-            line_h=line_h,
-            font_size=art_char / CHAR_ADVANCE * scale,
-            height=block,
-            top=OUTER_PAD + (content_h - block) / 2,
-        )
-    return canvas, arts
 
 
-def _runs(pieces: list[Seg]) -> list[Seg]:
-    merged: list[Seg] = []
-    for piece in pieces:
-        if merged and merged[-1].role == piece.role:
-            merged[-1] = Seg(merged[-1].text + piece.text, piece.role)
+def _art_runs(line: str, cells: list[list[float] | None], theme_name: str) -> list[tuple[str, str]]:
+    if len(cells) != len(line):
+        raise SystemExit("portrait colour rows do not match the art")
+    runs: list[tuple[str, str]] = []
+    pending = ""
+    for character, cell in zip(line, cells, strict=True):
+        if character == " " or cell is None:
+            pending += character
+            continue
+        paint = _paint(cell, theme_name)
+        if runs and runs[-1][0] == paint:
+            runs[-1] = (paint, runs[-1][1] + pending + character)
+        elif not runs:
+            runs.append((paint, pending + character))
         else:
-            merged.append(piece)
-    return merged
+            if pending:
+                runs[-1] = (runs[-1][0], runs[-1][1] + pending)
+            runs.append((paint, character))
+        pending = ""
+    if pending and runs:
+        runs[-1] = (runs[-1][0], runs[-1][1] + pending)
+    return runs
 
 
-def _text(x: float, y: float, pieces: list[Seg], theme_name: str, kind: str, char_w: float) -> str:
-    merged = _runs(pieces)
-    content = "".join(piece.text for piece in merged)
-    spans = "".join(
-        f'<tspan fill="{color(theme_name, piece.role)}">{esc(piece.text)}</tspan>' for piece in merged
-    )
-    cursor = ""
-    if kind == "cursor":
-        cursor = (
-            '<animate attributeName="opacity" values="1;1;0;0" keyTimes="0;0.45;0.5;1" '
-            'dur="1.2s" begin="0s" repeatCount="indefinite" calcMode="discrete"/>'
-        )
+def _fill(theme_name: str, role: str) -> str:
+    if role == "title":
+        return color(theme_name, "key")
+    if role == "rule":
+        return "url(#title-rule)"
+    return color(theme_name, role)
+
+
+def _spans(pieces: list[Seg], theme_name: str, bold_title: bool) -> str:
+    parts: list[str] = []
+    for piece in pieces:
+        weight = ' font-weight="bold"' if bold_title and piece.role == "title" else ""
+        blink = ""
+        if piece.text == "█":
+            blink = (
+                '<animate attributeName="opacity" values="1;0" dur="1.06s" begin="0s" '
+                'calcMode="discrete" repeatCount="indefinite"/>'
+            )
+        parts.append(f'<tspan fill="{_fill(theme_name, piece.role)}"{weight}>{esc(piece.text)}{blink}</tspan>')
+    return "".join(parts)
+
+
+def _line(pieces: list[Seg], theme_name: str, kind: str, y: float) -> str:
+    content = _join(pieces)
+    length = ""
+    if kind == "row":
+        length = f' textLength="{fmt(len(content) * PANEL_ADVANCE)}" lengthAdjust="spacing"'
+    blink_parent = kind == "cursor"
     return (
-        f'<text class="mono" x="{fmt(x)}" y="{fmt(y)}" font-size="{fmt(PANEL_FONT)}" '
-        f'textLength="{fmt(len(content) * char_w)}" lengthAdjust="spacingAndGlyphs" '
-        f'xml:space="preserve" dominant-baseline="text-before-edge" data-kind="{kind}">'
-        f"{spans}{cursor}</text>"
+        f'<text class="mono" font-size="{fmt(PANEL_FONT)}" xml:space="preserve" data-kind="{kind}">'
+        f'<tspan x="{fmt(TEXT_X)}" y="{fmt(y)}"{length}>{_spans(pieces, theme_name, bold_title=not blink_parent)}</tspan>'
+        "</text>"
     )
 
 
-def _art_text(lines: list[str], theme_name: str, art: ArtLayout) -> list[str]:
-    rendered: list[str] = []
+def _portrait(lines: list[str], colors: list[list[list[float] | None]], theme_name: str, height: float) -> str:
+    columns = max(len(line) for line in lines)
+    block_w = columns * ART_ADVANCE
+    band_w = ART_BAND[1] - ART_BAND[0]
+    x = ART_BAND[0] + (band_w - block_w) / 2
+    block_h = (len(lines) - 1) * ART_LINE
+    first_y = (height - block_h) / 2
+    parts: list[str] = []
     for index, line in enumerate(lines):
         if not line:
             continue
-        runs: list[tuple[str, str]] = []
-        for character in line:
-            paint = ink(character, theme_name)
-            if runs and runs[-1][0] == paint:
-                runs[-1] = (paint, runs[-1][1] + character)
-            else:
-                runs.append((paint, character))
+        runs = _art_runs(line, colors[index], theme_name)
         spans = "".join(f'<tspan fill="{paint}">{esc(text)}</tspan>' for paint, text in runs)
-        y = art.top + index * art.line_h
-        rendered.append(
-            f'<text class="mono" x="{fmt(OUTER_PAD)}" y="{fmt(y)}" font-size="{fmt(art.font_size)}" '
-            f'textLength="{fmt(len(line) * art.char_w)}" lengthAdjust="spacingAndGlyphs" '
-            f'xml:space="preserve" dominant-baseline="text-before-edge" data-kind="art">{spans}</text>'
+        y = first_y + index * ART_LINE
+        parts.append(
+            f'<text class="mono" font-size="{fmt(ART_FONT)}" xml:space="preserve" data-kind="art">'
+            f'<tspan x="{fmt(x)}" y="{fmt(y)}" textLength="{fmt(len(line) * ART_ADVANCE)}" '
+            f'lengthAdjust="spacing">{spans}</tspan></text>'
         )
-    return rendered
+    return "".join(parts)
 
 
-def render(theme_name: str, lines: list[Line], art_lines: list[str], canvas: Canvas, art: ArtLayout) -> str:
+def _defs(theme_name: str, height: float) -> str:
+    return (
+        "<defs>"
+        f'<linearGradient id="title-rule" x1="0" y1="0" x2="1" y2="0">'
+        f'<stop offset="0" stop-color="{color(theme_name, "key")}"/>'
+        f'<stop offset="1" stop-color="{color(theme_name, "dots")}" stop-opacity="0.35"/>'
+        "</linearGradient>"
+        f'<linearGradient id="scan" x1="0" y1="0" x2="0" y2="1">'
+        f'<stop offset="0" stop-color="{color(theme_name, "key")}" stop-opacity="0"/>'
+        f'<stop offset="0.5" stop-color="{color(theme_name, "key")}" stop-opacity="0.10"/>'
+        f'<stop offset="1" stop-color="{color(theme_name, "key")}" stop-opacity="0"/>'
+        "</linearGradient>"
+        '<clipPath id="reveal">'
+        f'<rect x="0" y="0" width="{fmt(CANVAS_W)}" height="0">'
+        f'<animate attributeName="height" from="0" to="{fmt(height)}" dur="1.2s" begin="0.2s" fill="freeze"/>'
+        "</rect></clipPath>"
+        "</defs>"
+    )
+
+
+def render(
+    theme_name: str,
+    lines: list[Line],
+    art_lines: list[str],
+    colors: list[list[list[float] | None]],
+    today: date,
+) -> str:
+    height = FIRST_Y + PANEL_LINE * (len(lines) - 1) + 20
     label = (
         "Profile card for Usama Khan, usama@khan, Applied AI Engineer in Pakistan "
         "and senior software engineer at FOCUS."
@@ -433,52 +501,47 @@ def render(theme_name: str, lines: list[Line], art_lines: list[str], canvas: Can
     body = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         (
-            f'<svg xmlns="http://www.w3.org/2000/svg" width="{fmt(canvas.width)}" height="{fmt(canvas.height)}" '
-            f'viewBox="0 0 {fmt(canvas.width)} {fmt(canvas.height)}" role="img" aria-label="{esc(label)}" '
+            f'<svg xmlns="http://www.w3.org/2000/svg" width="{fmt(CANVAS_W)}" height="{fmt(height)}" '
+            f'viewBox="0 0 {fmt(CANVAS_W)} {fmt(height)}" role="img" aria-label="{esc(label)}" '
             f'data-panel-cols="{PANEL_COLS}">'
         ),
         f"<style><![CDATA[{FONT_CSS}]]></style>",
-        f'<rect width="{fmt(canvas.width)}" height="{fmt(canvas.height)}" rx="16" fill="{color(theme_name, "bg")}"/>',
+        _defs(theme_name, height),
+        f'<rect width="{fmt(CANVAS_W)}" height="{fmt(height)}" rx="15" fill="{color(theme_name, "bg")}"/>',
+        _portrait(art_lines, colors, theme_name, height),
         (
-            f'<rect x="{fmt(canvas.panel_x)}" y="{fmt(canvas.panel_y)}" width="{fmt(canvas.panel_w)}" '
-            f'height="{fmt(canvas.panel_h)}" rx="12" fill="{color(theme_name, "panel")}" '
-            f'stroke="{color(theme_name, "border")}"/>'
+            f'<rect x="15" y="-40" width="386" height="40" fill="url(#scan)">'
+            f'<animate attributeName="y" values="-40;{fmt(height)};{fmt(height)}" keyTimes="0;0.35;1" '
+            f'dur="9s" begin="0s" repeatCount="indefinite"/></rect>'
         ),
-        *_art_text(art_lines, theme_name, art),
+        '<g clip-path="url(#reveal)">',
     ]
     for index, line in enumerate(lines):
-        body.append(
-            _text(
-                canvas.text_x,
-                canvas.text_top + index * PANEL_LINE,
-                line.pieces,
-                theme_name,
-                line.kind,
-                canvas.char_w,
-            )
-        )
+        body.append(_line(line.pieces, theme_name, line.kind, FIRST_Y + index * PANEL_LINE))
+    body.append("</g>")
     body.append(
-        f'<rect x="1.5" y="1.5" width="{fmt(canvas.width - 3)}" height="{fmt(canvas.height - 3)}" '
-        f'rx="16" fill="none" stroke="{color(theme_name, "border")}"/>'
+        f'<text class="mono" x="1003" y="{fmt(height - 14)}" text-anchor="end" font-size="11" '
+        f'fill="{color(theme_name, "dots")}">updated {today.isoformat()} · auto-built daily</text>'
     )
     body.append("</svg>")
     return "\n".join(body) + "\n"
 
 
 def main() -> None:
+    today = date.today()
     stats = load_stats()
-    lines = build_lines(stats)
+    lines = build_lines(stats, today)
+    colors = load_colors()
     dark_art = load_art(ART_DARK)
     light_art = load_art(ART_LIGHT)
-    canvas, arts = layout(dark_art, light_art, len(lines))
-    cards = {
-        "dark": ROOT / "dark_mode.svg",
-        "light": ROOT / "light_mode.svg",
-    }
+    if len(colors) != len(dark_art):
+        raise SystemExit("colour map does not match the portrait")
+    cards = {"dark": ROOT / "dark_mode.svg", "light": ROOT / "light_mode.svg"}
     portraits = {"dark": dark_art, "light": light_art}
+    height = FIRST_Y + PANEL_LINE * (len(lines) - 1) + 20
     for name, path in cards.items():
-        path.write_text(render(name, lines, portraits[name], canvas, arts[name]), encoding="utf-8")
-        print(f"wrote {path.name} ({fmt(canvas.width)}x{fmt(canvas.height)})")
+        path.write_text(render(name, lines, portraits[name], colors, today), encoding="utf-8")
+        print(f"wrote {path.name} ({fmt(CANVAS_W)}x{fmt(height)})")
 
 
 if __name__ == "__main__":

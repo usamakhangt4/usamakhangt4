@@ -1,4 +1,4 @@
-"""Contribution calendar with a Pac-Man run and four ghosts.
+"""Contribution calendar with a pixel Pac-Man and four ghosts.
 
 Every long animation shares one duration and starts at 0 so the loop stays in
 step. The mouth chomp is the only short cycle.
@@ -10,9 +10,8 @@ import json
 import math
 import sys
 from datetime import date, timedelta
-from pathlib import Path
 
-from build_card import FONT_CSS, ROOT, color, esc, fmt, theme
+from build_card import CANVAS_W, FONT_CSS, ROOT, color, esc, fmt, theme
 
 CALENDAR_PATH = ROOT / "cache" / "calendar.json"
 WEEKS = 53
@@ -23,17 +22,63 @@ OUTRO = 2.0
 RESET = 1.8
 EAT = BOARD_DURATION - INTRO - OUTRO - RESET
 DUR = "48s"
-CELL = 12.0
-GAP = 3.0
+CELL = 14.0
+GAP = 4.0
 STEP = CELL + GAP
-PAD = 20.0
-LABEL_W = 40.0
-MONTH_H = 22.0
-LEGEND_GAP = 18.0
+PAD = 15.0
+LABEL_W = 38.0
+MONTH_H = 48.0
+GRID_Y = 63.0
+LEGEND_GAP = 12.0
 LEGEND_H = 18.0
 GHOST_LAGS = (5, 9, 13, 17)
+PIXEL = 1.25
 MONTHS = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 WEEKDAY_LABELS = ((0, "Mon"), (2, "Wed"), (4, "Fri"))
+PAC_OPEN = (
+    "....#####....",
+    "..#########..",
+    ".###########.",
+    ".##########..",
+    ".########....",
+    ".######......",
+    ".####........",
+    ".######......",
+    ".########....",
+    ".##########..",
+    ".###########.",
+    "..#########..",
+    "....#####....",
+)
+PAC_CLOSED = (
+    "....#####....",
+    "..#########..",
+    ".###########.",
+    "#############",
+    "#############",
+    "###########..",
+    "##########...",
+    "###########..",
+    "#############",
+    "#############",
+    ".###########.",
+    "..#########..",
+    "....#####....",
+)
+GHOST_MASK = (
+    "....####....",
+    "..########..",
+    ".##########.",
+    ".#ww####ww#.",
+    "#wwww##wwww#",
+    "#wwoo##wwoo#",
+    "##oo####oo##",
+    "############",
+    "############",
+    "############",
+    "##.##..##.##",
+    "#...#..#...#",
+)
 
 
 def _placeholder() -> list[list[dict[str, object]]]:
@@ -99,7 +144,7 @@ def _cuts(counts: list[int]) -> tuple[int, int, int]:
         index = min(len(positive) - 1, max(0, math.ceil(fraction * len(positive)) - 1))
         return positive[index]
 
-    return pick(0.25), pick(0.5), pick(0.75)
+    return pick(0.40), pick(0.75), pick(0.93)
 
 
 def _level(count: int, cuts: tuple[int, int, int]) -> int:
@@ -112,6 +157,22 @@ def _level(count: int, cuts: tuple[int, int, int]) -> int:
     if count <= cuts[2]:
         return 3
     return 4
+
+
+def _activity(counts: list[int]) -> tuple[int, int, int]:
+    active = 0
+    streak = 0
+    longest = 0
+    best = 0
+    for count in counts:
+        best = max(best, count)
+        if count > 0:
+            active += 1
+            streak += 1
+            longest = max(longest, streak)
+        else:
+            streak = 0
+    return active, longest, best
 
 
 def _month_labels(weeks: list[list[dict[str, object]]]) -> list[tuple[int, str]]:
@@ -134,12 +195,14 @@ def _geometry() -> tuple[float, float]:
     grid_w = WEEKS * STEP - GAP
     grid_h = DAYS * STEP - GAP
     width = PAD + LABEL_W + grid_w + PAD
-    height = PAD + MONTH_H + grid_h + LEGEND_GAP + LEGEND_H + PAD
+    height = GRID_Y + grid_h + LEGEND_GAP + LEGEND_H + PAD
+    if abs(width - CANVAS_W) > 0.01:
+        raise SystemExit(f"calendar width is {width}, expected {CANVAS_W}")
     return width, height
 
 
 def _origin(week: int, day: int) -> tuple[float, float]:
-    return PAD + LABEL_W + week * STEP, PAD + MONTH_H + day * STEP
+    return PAD + LABEL_W + week * STEP, GRID_Y + day * STEP
 
 
 def _center(week: int, day: int) -> tuple[float, float]:
@@ -149,6 +212,29 @@ def _center(week: int, day: int) -> tuple[float, float]:
 
 def _cell_index(index: int) -> tuple[int, int]:
     return index % WEEKS, index // WEEKS
+
+
+def _path_cell(step: int) -> tuple[int, int]:
+    """Even rows run left to right. Odd rows run back, so a turn is one cell down."""
+    day = step // WEEKS
+    along = step % WEEKS
+    week = along if day % 2 == 0 else WEEKS - 1 - along
+    return week, day
+
+
+def _visit(week: int, day: int) -> int:
+    along = week if day % 2 == 0 else WEEKS - 1 - week
+    return day * WEEKS + along
+
+
+def _facing(step: int, total: int) -> str:
+    if step < 0:
+        row = 0
+    elif step >= total:
+        row = (total - 1) // WEEKS
+    else:
+        row = step // WEEKS
+    return "-1 1" if row % 2 else "1 1"
 
 
 def _normalize_times(times: list[float]) -> list[float]:
@@ -189,7 +275,7 @@ def board_animate(tag: str, attribute: str, values: list[str], times: list[float
     )
 
 
-def _track(lag: int, total: int) -> tuple[list[str], list[float]]:
+def _track(lag: int, total: int) -> tuple[list[str], list[float], list[str]]:
     frames: list[tuple[float, int]] = [(0.0, -lag)]
     for step in range(1, total):
         frames.append((INTRO + EAT * (step / total), step - lag))
@@ -198,35 +284,39 @@ def _track(lag: int, total: int) -> tuple[list[str], list[float]]:
     frames.append((BOARD_DURATION, -lag))
     values: list[str] = []
     times: list[float] = []
+    facing: list[str] = []
     for seconds, step in frames:
         if step < 0:
             anchor = _center(0, 0)
             point = (anchor[0] - 28 + step * 16, anchor[1])
         elif step >= total:
-            last = _center(*_cell_index(total - 1))
+            last = _center(*_path_cell(total - 1))
             point = (last[0] + 30 + (step - total) * 14, last[1])
         else:
-            point = _center(*_cell_index(step))
+            point = _center(*_path_cell(step))
         values.append(f"{fmt(point[0])} {fmt(point[1])}")
         times.append(seconds / BOARD_DURATION)
-    return values, times
+        facing.append(_facing(step, total))
+    return values, times, facing
 
 
-def _wedge(radius: float, mouth_deg: float) -> str:
-    half = math.radians(mouth_deg / 2)
-    upper = (radius * math.cos(half), -radius * math.sin(half))
-    lower = (radius * math.cos(half), radius * math.sin(half))
-    return (
-        f"M0 0 L{fmt(upper[0])} {fmt(upper[1])} "
-        f"A{fmt(radius)} {fmt(radius)} 0 1 1 {fmt(lower[0])} {fmt(lower[1])} Z"
+def _mask_path(rows: tuple[str, ...], symbol: str) -> str:
+    parts: list[str] = []
+    for y, row in enumerate(rows):
+        for x, cell in enumerate(row):
+            if cell != symbol:
+                continue
+            parts.append(f"M{fmt(x * PIXEL)} {fmt(y * PIXEL)}h{fmt(PIXEL)}v{fmt(PIXEL)}h-{fmt(PIXEL)}z")
+    return "".join(parts)
+
+
+def _sprite(rows: tuple[str, ...], fills: dict[str, str]) -> str:
+    width = len(rows[0]) * PIXEL
+    height = len(rows) * PIXEL
+    paths = "".join(
+        f'<path d="{_mask_path(rows, symbol)}" fill="{fill}"/>' for symbol, fill in fills.items() if symbol in "".join(rows)
     )
-
-
-def _circle(radius: float) -> str:
-    return (
-        f"M{fmt(radius)} 0 A{fmt(radius)} {fmt(radius)} 0 1 1 {fmt(-radius)} 0 "
-        f"A{fmt(radius)} {fmt(radius)} 0 1 1 {fmt(radius)} 0"
-    )
+    return f'<g transform="translate({fmt(-width / 2)} {fmt(-height / 2)})" shape-rendering="crispEdges">{paths}</g>'
 
 
 def _span_opacity(start: float, end: float) -> str:
@@ -264,27 +354,19 @@ def _scores(counts: list[int]) -> list[str]:
         animation = _span_opacity(start, end)
         base = "1" if not animation else "0"
         parts.append(
-            f'<text class="mono" x="{fmt(PAD)}" y="{fmt(_legend_y() + 13)}" fill="__SCORE__" '
-            f'font-size="13" opacity="{base}" data-kind="score">SCORE {score:,}{animation}</text>'
+            f'<text class="mono" x="{fmt(PAD)}" y="29" fill="__SCORE__" font-size="14" '
+            f'opacity="{base}" data-kind="score">{score:,} contributions in the last year{animation}</text>'
         )
     return parts
 
 
-def _legend_y() -> float:
-    return PAD + MONTH_H + (DAYS * STEP - GAP) + LEGEND_GAP
-
-
-def _ghost(fill: str, eye: str, pupil: str) -> str:
-    body = (
-        "M-6,-1 C-6,-6.2 -3.2,-8 0,-8 C3.2,-8 6,-6.2 6,-1 "
-        "L6,5 L4.4,3.5 L2.8,5 L1.2,3.5 L0,5 L-1.2,3.5 L-2.8,5 L-4.4,3.5 L-6,5 Z"
-    )
+def _chomp() -> str:
+    hold = 'keyTimes="0;0.5;1" calcMode="discrete" dur="0.48s" begin="0s" repeatCount="indefinite"'
     return (
-        f'<g><path d="{body}" fill="{fill}"/>'
-        f'<circle cx="-2.3" cy="-2.1" r="1.65" fill="{eye}"/>'
-        f'<circle cx="2.3" cy="-2.1" r="1.65" fill="{eye}"/>'
-        f'<circle cx="-1.7" cy="-1.8" r="0.72" fill="{pupil}"/>'
-        f'<circle cx="2.9" cy="-1.8" r="0.72" fill="{pupil}"/></g>'
+        f'<g opacity="1"><animate attributeName="opacity" values="1;0;0" {hold}/>'
+        f"{_sprite(PAC_OPEN, {'#': '__PAC__'})}</g>"
+        f'<g opacity="0"><animate attributeName="opacity" values="0;1;1" {hold}/>'
+        f"{_sprite(PAC_CLOSED, {'#': '__PAC__'})}</g>"
     )
 
 
@@ -300,23 +382,26 @@ def render(theme_name: str, weeks: list[list[dict[str, object]]]) -> str:
         raise SystemExit(f"calendar has {len(counts)} days")
     cuts = _cuts(counts)
     total = len(counts)
+    active, streak, best = _activity(counts)
     hide = (INTRO + EAT + OUTRO) / BOARD_DURATION
     parts = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         (
             f'<svg xmlns="http://www.w3.org/2000/svg" width="{fmt(width)}" height="{fmt(height)}" '
             f'viewBox="0 0 {fmt(width)} {fmt(height)}" role="img" '
-            f'aria-label="{esc("GitHub contribution calendar. Pac-Man eats the days while the score counts up.")}">'
+            f'aria-label="{esc("GitHub contribution calendar. Pac-Man eats the days while the total counts up.")}">'
         ),
         f"<style><![CDATA[{FONT_CSS}]]></style>",
-        f'<rect width="{fmt(width)}" height="{fmt(height)}" rx="16" fill="{color(theme_name, "bg")}"/>',
+        f'<rect width="{fmt(width)}" height="{fmt(height)}" rx="15" fill="{color(theme_name, "bg")}"/>',
     ]
+    visited = [0] * total
     for index, count in enumerate(counts):
         week, day = _cell_index(index)
+        visited[_visit(week, day)] = count
         x, y = _origin(week, day)
-        hit = (INTRO + EAT * (index / total)) / BOARD_DURATION
+        hit = (INTRO + EAT * (_visit(week, day) / total)) / BOARD_DURATION
         parts.append(
-            f'<rect data-cell="1" x="{fmt(x)}" y="{fmt(y)}" width="{fmt(CELL)}" height="{fmt(CELL)}" rx="2" '
+            f'<rect data-cell="1" x="{fmt(x)}" y="{fmt(y)}" width="{fmt(CELL)}" height="{fmt(CELL)}" rx="3" '
             f'fill="{levels[_level(count, cuts)]}">'
             + board_animate(
                 "animate",
@@ -332,14 +417,13 @@ def render(theme_name: str, weeks: list[list[dict[str, object]]]) -> str:
         row = (weekday - first.weekday()) % 7
         _x, y = _center(0, row)
         parts.append(
-            f'<text class="mono" x="{fmt(PAD)}" y="{fmt(y)}" fill="{color(theme_name, "muted")}" '
-            f'font-size="11" dominant-baseline="central">{label}</text>'
+            f'<text class="mono" x="{fmt(PAD)}" y="{fmt(y)}" fill="{color(theme_name, "dots")}" '
+            f'font-size="12" dominant-baseline="central">{label}</text>'
         )
     for week, label in _month_labels(weeks):
         x, _y = _origin(week, 0)
         parts.append(
-            f'<text class="mono" x="{fmt(x)}" y="{fmt(PAD + 4)}" fill="{color(theme_name, "muted")}" '
-            f'font-size="12" dominant-baseline="text-before-edge">{label}</text>'
+            f'<text class="mono" x="{fmt(x)}" y="55" fill="{color(theme_name, "dots")}" font-size="12">{label}</text>'
         )
     actor_opacity = board_animate(
         "animate",
@@ -348,52 +432,56 @@ def render(theme_name: str, weeks: list[list[dict[str, object]]]) -> str:
         [0.0, hide, hide + 0.0004, 1.0],
         "discrete",
     )
+    eye = str(colors["ghost_eye"])
+    pupil = str(colors["ghost_pupil"])
     for lag, ghost_fill in zip(GHOST_LAGS, ghosts, strict=True):
-        values, times = _track(lag, total)
+        values, times, _facing_values = _track(lag, total)
+        sprite = _sprite(GHOST_MASK, {"#": ghost_fill, "w": eye, "o": pupil})
         parts.append(
-            '<g>'
+            "<g>"
             + actor_opacity
             + "<g>"
             + board_animate("animateTransform", "transform", values, times, "discrete", "translate")
-            + _ghost(ghost_fill, str(colors["ghost_eye"]), str(colors["ghost_pupil"]))
+            + sprite
             + "</g></g>"
         )
-    radius = CELL * 0.72
-    values, times = _track(0, total)
+    values, times, facing = _track(0, total)
     parts.append(
         "<g>"
         + actor_opacity
         + "<g>"
         + board_animate("animateTransform", "transform", values, times, "discrete", "translate")
-        + f'<path fill="{color(theme_name, "pac")}" d="{_wedge(radius, 48)}">'
-        + f'<animate attributeName="d" begin="0s" dur="0.24s" repeatCount="indefinite" '
-        + f'values="{_wedge(radius, 48)};{_circle(radius)};{_wedge(radius, 48)}"/></path></g></g>'
+        + "<g>"
+        + board_animate("animateTransform", "transform", facing, times, "discrete", "scale")
+        + _chomp().replace("__PAC__", color(theme_name, "pac"))
+        + "</g></g></g>"
     )
     box = 12.0
     boxes = 5 * box + 4 * GAP
     more_x = width - PAD - 36
     boxes_x = more_x - 8 - boxes
     less_x = boxes_x - 8 - 34
-    legend_y = _legend_y()
+    legend_y = GRID_Y + (DAYS * STEP - GAP) + LEGEND_GAP
     parts.append(
-        f'<text class="mono" x="{fmt(less_x)}" y="{fmt(legend_y + 12)}" fill="{color(theme_name, "muted")}" '
+        f'<text class="mono" x="{fmt(less_x)}" y="{fmt(legend_y + 12)}" fill="{color(theme_name, "dots")}" '
         f'font-size="12" dominant-baseline="central">Less</text>'
     )
     for level, paint in enumerate(levels):
         parts.append(
             f'<rect x="{fmt(boxes_x + level * (box + GAP))}" y="{fmt(legend_y + 3)}" width="{fmt(box)}" '
-            f'height="{fmt(box)}" rx="2" fill="{paint}"/>'
+            f'height="{fmt(box)}" rx="3" fill="{paint}"/>'
         )
     parts.append(
-        f'<text class="mono" x="{fmt(more_x)}" y="{fmt(legend_y + 12)}" fill="{color(theme_name, "muted")}" '
+        f'<text class="mono" x="{fmt(more_x)}" y="{fmt(legend_y + 12)}" fill="{color(theme_name, "dots")}" '
         f'font-size="12" dominant-baseline="central">More</text>'
     )
-    score_fill = color(theme_name, "accent")
-    for score in _scores(counts):
-        parts.append(score.replace("__SCORE__", score_fill))
+    for score in _scores(visited):
+        parts.append(score.replace("__SCORE__", color(theme_name, "text")))
     parts.append(
-        f'<rect x="1.5" y="1.5" width="{fmt(width - 3)}" height="{fmt(height - 3)}" rx="16" fill="none" '
-        f'stroke="{color(theme_name, "border")}"/>'
+        f'<text class="mono" x="1003" y="29" text-anchor="end" font-size="13" fill="{color(theme_name, "dots")}">'
+        f'active days <tspan fill="{color(theme_name, "key")}">{active:,}</tspan>'
+        f' · longest streak <tspan fill="{color(theme_name, "key")}">{streak:,}</tspan>d'
+        f' · best day <tspan fill="{color(theme_name, "key")}">{best:,}</tspan></text>'
     )
     parts.append("</svg>")
     return "\n".join(parts) + "\n"

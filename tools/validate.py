@@ -2,10 +2,11 @@
 
 from __future__ import annotations
 
+import re
 import sys
 import xml.etree.ElementTree as ET
 
-from build_card import ART_RAMP, PANEL_COLS, ROOT, build_lines, load_art, load_stats
+from build_card import ART_RAMP, CANVAS_W, PANEL_COLS, ROOT, build_lines, fmt, load_art, load_stats
 from build_pacman import DAYS, DUR, WEEKS, load_weeks
 from make_ascii import RAMP
 
@@ -13,6 +14,8 @@ SVG = "http://www.w3.org/2000/svg"
 CARD = ("dark_mode.svg", "light_mode.svg")
 PACMAN = ("pacman_dark.svg", "pacman_light.svg")
 LINKS = tuple(f"link_{name}_{theme}.svg" for name in ("portfolio", "linkedin", "email") for theme in ("dark", "light"))
+LOC_ROW = re.compile(r"^\. Lines of Code: \.+ [\d,]+ \( [\d,]+\+\+, [\d,]+-- \)$")
+BUTTON_W = "339.333"
 
 
 def _tag(element: ET.Element) -> str:
@@ -32,7 +35,7 @@ def _parse(path: Path) -> ET.Element:
 
 
 def _text(element: ET.Element) -> str:
-    return "".join(child.text or "" for child in element if _tag(child) == "tspan")
+    return "".join(element.itertext())
 
 
 def _check_rows(cards: dict[str, ET.Element]) -> None:
@@ -46,8 +49,13 @@ def _check_rows(cards: dict[str, ET.Element]) -> None:
         for row in rows:
             if len(row) != PANEL_COLS:
                 raise SystemExit(f"{name} has a row of {len(row)} columns, expected {PANEL_COLS}")
+        loc = [row for row in rows if row.startswith(". Lines of Code:")]
+        if len(loc) != 1 or LOC_ROW.fullmatch(loc[0]) is None:
+            raise SystemExit(f"{name} lines-of-code row does not match the expected form")
         if root.get("data-panel-cols") != str(PANEL_COLS):
             raise SystemExit(f"{name} is missing the panel column count")
+        if root.get("width") != fmt(CANVAS_W):
+            raise SystemExit(f"{name} is {root.get('width')} wide, expected {fmt(CANVAS_W)}")
 
 
 def _check_art(cards: dict[str, ET.Element]) -> None:
@@ -131,6 +139,12 @@ def main() -> None:
         root = _parse(ROOT / name)
         if root.get("aria-label") in {None, ""}:
             raise SystemExit(f"{name} needs alt text")
+        if root.get("width") != BUTTON_W:
+            raise SystemExit(f"{name} is {root.get('width')} wide, expected {BUTTON_W}")
+    for name in PACMAN:
+        root = _parse(ROOT / name)
+        if root.get("width") != fmt(CANVAS_W):
+            raise SystemExit(f"{name} is {root.get('width')} wide, expected {fmt(CANVAS_W)}")
     print(f"validated {len(CARD) + len(PACMAN) + len(LINKS)} SVGs")
 
 
