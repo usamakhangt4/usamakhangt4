@@ -1,61 +1,39 @@
-<div align="center">
-  <h1 align="center">Hi, I'm Usama Khan <img src="https://media.giphy.com/media/hvRJCLFzcasrR4ia7z/giphy.gif" width="30px"/></h1>
-  
-  <a href="https://git.io/typing-svg">
-    <img src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=24&pause=1000&color=338BFD&center=true&vCenter=true&width=800&lines=Frontend+Engineer+%7C+Next.js+%26+TanStack;Building+Scalable+AI+Web+Apps;Exploring+Computer+Vision+%26+Python" alt="Typing SVG" />
-  </a>
+<a href="https://usamakhan.vercel.app/">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/usamakhangt4/usamakhangt4/master/dark_mode.svg">
+    <img width="100%" alt="Profile card for Usama Khan: usama@khan, Applied AI Engineer in Pakistan, senior software engineer at FOCUS." src="https://raw.githubusercontent.com/usamakhangt4/usamakhangt4/master/light_mode.svg">
+  </picture>
+</a>
 
-  <p><b>Building scalable, pixel-perfect web applications & exploring the intersection of Frontend & Computer Vision.</b></p>
-  
-  <p>
-    <a href="https://www.linkedin.com/in/usamakhangt4/" target="_blank">
-      <img src="https://skillicons.dev/icons?i=linkedin" />
-    </a>
-    &nbsp;&nbsp;
-    <a href="mailto:usamakhangt4@gmail.com" target="_blank">
-      <img src="https://skillicons.dev/icons?i=gmail" />
-    </a>
-  </p>
-</div>
+Applied AI Engineer | Full-Stack JavaScript & Python | Computer Vision, Local LLMs, & Modern Web Architecture
 
-<br/>
+<a href="https://usamakhan.vercel.app/">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/usamakhangt4/usamakhangt4/master/link_portfolio_dark.svg">
+    <img width="33.3%" alt="Portfolio" src="https://raw.githubusercontent.com/usamakhangt4/usamakhangt4/master/link_portfolio_light.svg">
+  </picture>
+</a><a href="https://www.linkedin.com/in/usamakhangt4/">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/usamakhangt4/usamakhangt4/master/link_linkedin_dark.svg">
+    <img width="33.3%" alt="LinkedIn" src="https://raw.githubusercontent.com/usamakhangt4/usamakhangt4/master/link_linkedin_light.svg">
+  </picture>
+</a><a href="mailto:usamakhangt4@gmail.com">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/usamakhangt4/usamakhangt4/master/link_email_dark.svg">
+    <img width="33.3%" alt="Email" src="https://raw.githubusercontent.com/usamakhangt4/usamakhangt4/master/link_email_light.svg">
+  </picture>
+</a>
 
-### 🛠️ My Tech Ecosystem
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/usamakhangt4/usamakhangt4/master/pacman_dark.svg">
+  <img width="100%" alt="GitHub contribution calendar with Pac-Man eating each day and a score counting up." src="https://raw.githubusercontent.com/usamakhangt4/usamakhangt4/master/pacman_light.svg">
+</picture>
 
-I don't just write code; I architect solutions. Here is the stack I use to build production-grade apps:
+## Featured
 
-| Domain | Technologies |
-| :--- | :--- |
-| **💻 Frontend Core** | React, Next.js (App Router), TypeScript, Vue.js |
-| **🎨 Styling & UI** | Tailwind CSS, Shadcn UI, Framer Motion |
-| **⚡ State & Data** | TanStack Query, Zustand, Redux Toolkit |
-| **☁️ Backend & BaaS** | Supabase, Firebase, Strapi (Headless CMS) |
-| **🧠 AI & Logic** | Python, YOLOPv2 (Computer Vision), Drizzle ORM |
-
----
-
-### 🔭 What I'm Working On
-- **Migrating Legacy State:** Moving complex client-side state to **TanStack Query** for better caching and performance.
-- **AI Integration:** Building interfaces for Python-based Computer Vision models (like my **YOLOPv2 Studio**).
-- **Architecture:** Exploring **TanStack Start** and **Supabase** for full-stack type safety.
-
----
-
-<br />
-<div align="center">
-  <h3>🤝 Let's Collaborate</h3>
-  <p>
-    I am open to discussing <b>Next.js Architecture</b>, <b>Computer Vision integrations</b>, 
-    or building scalable <b>SaaS products</b>.
-  </p>
-
-  <br />
-
-  <div align="center">
-  <p><b>My Daily Driver Tools</b></p>
-  <img src="https://skillicons.dev/icons?i=git,github,vscode,linux,vercel,postman,figma" />
-</div>
-
-<br />
-  <img src="https://visitor-badge.laobi.icu/badge?page_id=usamakhangt4.usamakhangt4" alt="Visitor Badge" />
-</div>
+- **[KittenTTS WebUI](https://github.com/usamakhangt4/kitten-tts-webui)**: local text-to-speech web UI ([Samples](https://usamakhangt4.github.io/kitten-tts-webui/))
+- **[git-auto-commit](https://github.com/usamakhangt4/git-auto-commit)**: Rust CLI that writes commit messages with a local Ollama model
+- **[shadcn-virtualized-tree](https://github.com/usamakhangt4/shadcn-virtualized-tree)**: typed headless + virtualized React tree for large hierarchies
+- **[viewer-360](https://github.com/usamakhangt4/viewer-360)**: framework-agnostic 360° product viewer Web Component with React/Vue/Angular wrappers (npm `@usamakhangt4/viewer-360`)
+- **[YOLOPv2-Studio](https://github.com/usamakhangt4/YOLOPv2-Studio)**: real-time driving-perception studio (object, lane, drivable area) with CUDA/MPS
+- **[Corpo Braindance](https://corpo-braindance.vercel.app/)**: local-first cyberpunk corporate-brief generator (Next.js 16, React 19, Zustand, static export, no backend)
